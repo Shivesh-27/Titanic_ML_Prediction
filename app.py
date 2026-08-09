@@ -10,13 +10,15 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
+
 # =========================================================
 # 1. PAGE CONFIGURATION
 # =========================================================
 
 st.set_page_config(
     page_title="Titanic Survival Prediction",
-    page_icon="🚢"
+    page_icon="🚢",
+    layout="wide"
 )
 
 
@@ -60,47 +62,54 @@ st.write(
 
 st.header("👤 Passenger Details")
 
-pclass = st.selectbox(
-    "Passenger Class",
-    [1, 2, 3]
-)
+col1, col2 = st.columns(2)
 
-sex_input = st.selectbox(
-    "Sex",
-    ["Male", "Female"]
-)
+with col1:
 
-age = st.number_input(
-    "Age",
-    min_value=0,
-    max_value=100,
-    value=25
-)
+    pclass = st.selectbox(
+        "Passenger Class",
+        [1, 2, 3]
+    )
 
-sibsp = st.number_input(
-    "Siblings/Spouses Aboard",
-    min_value=0,
-    max_value=10,
-    value=0
-)
+    sex_input = st.selectbox(
+        "Sex",
+        ["Male", "Female"]
+    )
 
-parch = st.number_input(
-    "Parents/Children Aboard",
-    min_value=0,
-    max_value=10,
-    value=0
-)
+    age = st.number_input(
+        "Age",
+        min_value=0,
+        max_value=100,
+        value=25
+    )
 
-fare = st.number_input(
-    "Fare",
-    min_value=0.0,
-    value=32.0
-)
+    sibsp = st.number_input(
+        "Siblings/Spouses Aboard",
+        min_value=0,
+        max_value=10,
+        value=0
+    )
 
-embarked = st.selectbox(
-    "Embarked",
-    ["S", "Q"]
-)
+
+with col2:
+
+    parch = st.number_input(
+        "Parents/Children Aboard",
+        min_value=0,
+        max_value=10,
+        value=0
+    )
+
+    fare = st.number_input(
+        "Fare",
+        min_value=0.0,
+        value=32.0
+    )
+
+    embarked = st.selectbox(
+        "Embarked",
+        ["S", "Q"]
+    )
 
 
 # =========================================================
@@ -132,121 +141,235 @@ input_data = pd.DataFrame({
 # =========================================================
 # 8. PREDICTION
 # =========================================================
-# =========================================================
-# 8. PREDICTION
-# =========================================================
 
-if st.button("🚢 Predict Survival"):
+if st.button("🚢 Predict Survival", use_container_width=True):
 
     prediction = model.predict(input_data)
+
     probability = model.predict_proba(input_data)
 
     survival_probability = probability[0][1] * 100
     death_probability = probability[0][0] * 100
-
-    # -----------------------------------------------------
-    # Prediction Result
-    # -----------------------------------------------------
-
-    st.subheader("🔮 Prediction Result")
-
-    if prediction[0] == 1:
-        st.success("🎉 Passenger is likely to Survive")
-        prediction_text = "Survived"
-    else:
-        st.error("❌ Passenger is not likely to Survive")
-        prediction_text = "Did Not Survive"
-
-    # -----------------------------------------------------
-    # Probabilities
-    # -----------------------------------------------------
-
-    st.write(
-        f"### Survival Probability: "
-        f"{survival_probability:.2f}%"
-    )
-
-    st.progress(int(survival_probability))
-
-    st.write(
-        f"### Death Probability: "
-        f"{death_probability:.2f}%"
-    )
-
-    st.progress(int(death_probability))
-
-    # -----------------------------------------------------
-    # Prediction Confidence
-    # -----------------------------------------------------
 
     confidence = max(
         survival_probability,
         death_probability
     )
 
+
+    # =====================================================
+    # PREDICTION RESULT
+    # =====================================================
+
+    st.header("🔮 Prediction Result")
+
+    if prediction[0] == 1:
+
+        st.success(
+            "🎉 Passenger is likely to Survive"
+        )
+
+        prediction_text = "Survived"
+
+    else:
+
+        st.error(
+            "❌ Passenger is not likely to Survive"
+        )
+
+        prediction_text = "Did Not Survive"
+
+
+    # =====================================================
+    # PROBABILITIES
+    # =====================================================
+
+    st.subheader("📊 Prediction Probabilities")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.metric(
+            "Survival Probability",
+            f"{survival_probability:.2f}%"
+        )
+
+        st.progress(
+            int(survival_probability)
+        )
+
+
+    with col2:
+
+        st.metric(
+            "Death Probability",
+            f"{death_probability:.2f}%"
+        )
+
+        st.progress(
+            int(death_probability)
+        )
+
+
+    # =====================================================
+    # PREDICTION CONFIDENCE
+    # =====================================================
+
     st.subheader("🎯 Prediction Confidence")
 
     if confidence >= 80:
+
         st.success(
             f"🟢 High Confidence: {confidence:.2f}%"
         )
 
     elif confidence >= 60:
+
         st.warning(
             f"🟡 Medium Confidence: {confidence:.2f}%"
         )
 
     else:
+
         st.error(
             f"🔴 Low Confidence: {confidence:.2f}%"
         )
 
-    # -----------------------------------------------------
-    # Save Prediction History
-    # -----------------------------------------------------
+
+    # =====================================================
+    # SAVE PREDICTION HISTORY
+    # =====================================================
 
     history_record = {
+
         "Pclass": pclass,
+
         "Sex": sex_input,
+
         "Age": age,
+
         "SibSp": sibsp,
+
         "Parch": parch,
+
         "Fare": fare,
+
         "Embarked": embarked,
+
         "Prediction": prediction_text,
+
         "Survival Probability":
             f"{survival_probability:.2f}%",
+
         "Confidence":
             f"{confidence:.2f}%"
     }
 
-    st.session_state.history.append(history_record)
-
-    # -----------------------------------------------------
-    # SAVE LAST PREDICTION
-    # -----------------------------------------------------
-
-    st.session_state.last_prediction = {
-        "Pclass": pclass,
-        "Sex": sex_input,
-        "Age": age,
-        "SibSp": sibsp,
-        "Parch": parch,
-        "Fare": fare,
-        "Embarked": embarked,
-        "Prediction": int(prediction[0]),
-        "Survival Probability":
-            round(survival_probability, 2),
-        "Confidence":
-            round(confidence, 2)
-    }
-
-    st.success(
-        "✅ Prediction saved. Now enter the actual outcome below."
+    st.session_state.history.append(
+        history_record
     )
 
+
+    # =====================================================
+    # SAVE LAST PREDICTION
+    # =====================================================
+
+    st.session_state.last_prediction = {
+
+        "Pclass": pclass,
+
+        "Sex": sex_input,
+
+        "Age": age,
+
+        "SibSp": sibsp,
+
+        "Parch": parch,
+
+        "Fare": fare,
+
+        "Embarked": embarked,
+
+        "Prediction": int(prediction[0]),
+
+        "Survival Probability":
+            survival_probability,
+
+        "Death Probability":
+            death_probability,
+
+        "Confidence":
+            confidence
+    }
+
+
+    st.success(
+        "✅ Prediction saved. "
+        "Now enter the actual outcome below."
+    )
+
+
 # =========================================================
-# 9. PREDICTION HISTORY
+# 9. PREDICTION EXPLANATION
+# =========================================================
+
+st.header("🔬 Prediction Explanation")
+
+feature_names = [
+    "Pclass",
+    "Sex",
+    "Age",
+    "SibSp",
+    "Parch",
+    "Fare",
+    "Embarked_Q",
+    "Embarked_S"
+]
+
+importance_values = model.feature_importances_
+
+importance_df = pd.DataFrame({
+    "Feature": feature_names,
+    "Importance": importance_values
+})
+
+importance_df = importance_df.sort_values(
+    by="Importance",
+    ascending=False
+)
+
+importance_df["Importance (%)"] = (
+    importance_df["Importance"] * 100
+).round(2)
+
+
+st.subheader("📊 Features Influencing the Model")
+
+st.bar_chart(
+    importance_df.head(5).set_index(
+        "Feature"
+    )["Importance (%)"]
+)
+
+
+top_feature = importance_df.iloc[0]
+
+st.success(
+    f"⭐ Most influential feature: "
+    f"{top_feature['Feature']} "
+    f"({top_feature['Importance (%)']:.2f}%)"
+)
+
+st.info(
+    "Feature importance shows how much each feature "
+    "contributes to the Random Forest model's decisions. "
+    "It does not mean that the feature alone caused the prediction."
+)
+
+
+# =========================================================
+# 10. PREDICTION HISTORY
 # =========================================================
 
 st.header("📋 Prediction History")
@@ -262,20 +385,6 @@ if len(st.session_state.history) > 0:
         use_container_width=True
     )
 
-else:
-
-    st.info("No predictions made yet.")
-
-    # =========================================================
-# DOWNLOAD PREDICTION HISTORY
-# =========================================================
-
-if len(st.session_state.history) > 0:
-
-    history_df = pd.DataFrame(
-        st.session_state.history
-    )
-
     st.download_button(
         label="📥 Download Prediction History",
         data=history_df.to_csv(index=False),
@@ -283,9 +392,15 @@ if len(st.session_state.history) > 0:
         mime="text/csv"
     )
 
+else:
+
+    st.info(
+        "No predictions made yet."
+    )
+
 
 # =========================================================
-# 10. CLEAR PREDICTION HISTORY
+# 11. CLEAR PREDICTION HISTORY
 # =========================================================
 
 if st.button("🗑️ Clear Prediction History"):
@@ -295,13 +410,14 @@ if st.button("🗑️ Clear Prediction History"):
     st.rerun()
 
 
-# 11. RECORD ACTUAL OUTCOME
+# =========================================================
+# 12. RECORD ACTUAL OUTCOME
+# =========================================================
 
 if st.session_state.last_prediction is not None:
 
     st.header("📝 Record Actual Outcome")
 
-    # Show latest prediction
     latest = st.session_state.last_prediction
 
     st.info(
@@ -310,6 +426,7 @@ if st.session_state.last_prediction is not None:
         f"| Survival Probability: "
         f"{latest['Survival Probability']:.2f}%"
     )
+
 
     actual_outcome = st.selectbox(
         "What was the actual outcome?",
@@ -321,6 +438,7 @@ if st.session_state.last_prediction is not None:
         key="actual_outcome"
     )
 
+
     if st.button("💾 Save Actual Outcome"):
 
         if actual_outcome == "Select":
@@ -331,58 +449,55 @@ if st.session_state.last_prediction is not None:
 
         else:
 
-            # Convert actual outcome to 0/1
             actual = (
                 1
                 if actual_outcome == "Survived"
                 else 0
             )
 
-            # Copy latest prediction
-            record = st.session_state.last_prediction.copy()
+            record = (
+                st.session_state
+                .last_prediction
+                .copy()
+            )
 
-            # Add actual outcome
             record["Actual"] = actual
 
-            # Add actual text
-            record["Actual Outcome"] = actual_outcome
+            record["Actual Outcome"] = (
+                actual_outcome
+            )
 
-            # -------------------------------------------------
-            # SAVE RECORD
-            # -------------------------------------------------
-
-            st.session_state.live_records.append(record)
+            st.session_state.live_records.append(
+                record
+            )
 
             st.success(
                 "✅ Actual outcome saved successfully!"
             )
 
-            # -------------------------------------------------
-            # CLEAR LAST PREDICTION
-            # -------------------------------------------------
-
             st.session_state.last_prediction = None
 
-            # Refresh page so metrics update immediately
             st.rerun()
 
 
 # =========================================================
-# 12. MODEL PERFORMANCE
+# 13. MODEL PERFORMANCE
 # =========================================================
 
 st.header("📊 Model Performance")
 
 accuracy = performance["accuracy"]
+
 cm = performance["confusion_matrix"]
+
 report = performance["classification_report"]
 
 
-# ---------------------------------------------------------
-# Model Accuracy
-# ---------------------------------------------------------
+# =========================================================
+# MODEL ACCURACY
+# =========================================================
 
-st.subheader("Model Accuracy")
+st.subheader("🎯 Model Accuracy")
 
 st.metric(
     "Random Forest Accuracy",
@@ -390,11 +505,11 @@ st.metric(
 )
 
 
-# ---------------------------------------------------------
-# Confusion Matrix
-# ---------------------------------------------------------
+# =========================================================
+# CONFUSION MATRIX
+# =========================================================
 
-st.subheader("Confusion Matrix")
+st.subheader("📊 Confusion Matrix")
 
 cm_df = pd.DataFrame(
     cm,
@@ -413,9 +528,12 @@ st.dataframe(
     use_container_width=True
 )
 
-# Classification Report
 
-st.subheader("Classification Report")
+# =========================================================
+# CLASSIFICATION REPORT
+# =========================================================
+
+st.subheader("📋 Classification Report")
 
 report_df = pd.DataFrame(
     report
@@ -427,7 +545,9 @@ st.dataframe(
 )
 
 
-# 13. LIVE MODEL PERFORMANCE
+# =========================================================
+# 14. LIVE MODEL PERFORMANCE
+# =========================================================
 
 st.header("📈 Live Model Performance")
 
@@ -437,16 +557,14 @@ if len(st.session_state.live_records) > 0:
         st.session_state.live_records
     )
 
-    # -----------------------------------------------------
-    # Actual and Predicted Values
-    # -----------------------------------------------------
-
     y_true = live_df["Actual"].astype(int)
+
     y_pred = live_df["Prediction"].astype(int)
 
-    # -----------------------------------------------------
-    # Calculate Metrics
-    # -----------------------------------------------------
+
+    # =====================================================
+    # LIVE METRICS
+    # =====================================================
 
     live_accuracy = accuracy_score(
         y_true,
@@ -471,48 +589,47 @@ if len(st.session_state.live_records) > 0:
         zero_division=0
     )
 
-    # -----------------------------------------------------
-    # Number of Records
-    # -----------------------------------------------------
 
     st.write(
         f"**Live Predictions With Known Actual Outcomes: "
         f"{len(live_df)}**"
     )
 
-    # -----------------------------------------------------
-    # Metrics
-    # -----------------------------------------------------
 
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
+
         st.metric(
             "Live Accuracy",
             f"{live_accuracy * 100:.2f}%"
         )
 
     with col2:
+
         st.metric(
             "Live Precision",
             f"{live_precision * 100:.2f}%"
         )
 
     with col3:
+
         st.metric(
             "Live Recall",
             f"{live_recall * 100:.2f}%"
         )
 
     with col4:
+
         st.metric(
             "Live F1 Score",
             f"{live_f1 * 100:.2f}%"
         )
 
-    # -----------------------------------------------------
-    # Live Confusion Matrix
-    # -----------------------------------------------------
+
+    # =====================================================
+    # LIVE CONFUSION MATRIX
+    # =====================================================
 
     st.subheader("📊 Live Confusion Matrix")
 
@@ -539,9 +656,10 @@ if len(st.session_state.live_records) > 0:
         use_container_width=True
     )
 
-    # -----------------------------------------------------
-    # Live Performance Records
-    # -----------------------------------------------------
+
+    # =====================================================
+    # LIVE PERFORMANCE RECORDS
+    # =====================================================
 
     st.subheader("📋 Live Performance Records")
 
@@ -576,9 +694,9 @@ else:
         "outcome to calculate live performance."
     )
 
-    # =========================================================
+
 # =========================================================
-# 14. DOWNLOAD LIVE PERFORMANCE DATA
+# 15. DOWNLOAD LIVE PERFORMANCE DATA
 # =========================================================
 
 st.header("📥 Download Live Performance Data")
@@ -589,7 +707,9 @@ if len(st.session_state.live_records) > 0:
         st.session_state.live_records
     )
 
-    csv_data = live_df.to_csv(index=False)
+    csv_data = live_df.to_csv(
+        index=False
+    )
 
     st.download_button(
         label="⬇️ Download Live Performance CSV",
@@ -601,5 +721,535 @@ if len(st.session_state.live_records) > 0:
 else:
 
     st.info(
-        "No live performance records available to download."
+        "No live performance records available "
+        "to download."
     )
+
+
+# =========================================================
+# 16. LIVE ACCURACY TREND
+# =========================================================
+
+st.header("📈 Live Accuracy Trend")
+
+if len(st.session_state.live_records) > 0:
+
+    live_df = pd.DataFrame(
+        st.session_state.live_records
+    )
+
+    correct = (
+        live_df["Prediction"].astype(int)
+        ==
+        live_df["Actual"].astype(int)
+    )
+
+    cumulative_accuracy = (
+        correct.cumsum()
+        /
+        pd.Series(
+            range(1, len(correct) + 1),
+            index=correct.index
+        )
+        * 100
+    )
+
+    trend_df = pd.DataFrame({
+
+        "Prediction Number":
+            range(1, len(live_df) + 1),
+
+        "Accuracy":
+            cumulative_accuracy.values
+    })
+
+    st.line_chart(
+        trend_df.set_index(
+            "Prediction Number"
+        )
+    )
+
+    st.caption(
+        "This chart shows cumulative live accuracy "
+        "as actual outcomes are recorded."
+    )
+
+else:
+
+    st.info(
+        "Record actual outcomes to generate "
+        "the live accuracy trend."
+    )
+
+
+# =========================================================
+# 17. TEST VS LIVE PERFORMANCE
+# =========================================================
+
+st.header("⚖️ Test vs Live Performance")
+
+if len(st.session_state.live_records) > 0:
+
+    live_df = pd.DataFrame(
+        st.session_state.live_records
+    )
+
+    y_true = live_df["Actual"]
+
+    y_pred = live_df["Prediction"]
+
+
+    # =====================================================
+    # LIVE METRICS
+    # =====================================================
+
+    live_accuracy = accuracy_score(
+        y_true,
+        y_pred
+    )
+
+    live_precision = precision_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    live_recall = recall_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    live_f1 = f1_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+
+    # =====================================================
+    # TEST METRICS
+    # =====================================================
+
+    test_accuracy = performance["accuracy"]
+
+    test_report = performance[
+        "classification_report"
+    ]
+
+
+    test_precision = test_report.get(
+        "1",
+        test_report.get(1)
+    )["precision"]
+
+    test_recall = test_report.get(
+        "1",
+        test_report.get(1)
+    )["recall"]
+
+    test_f1 = test_report.get(
+        "1",
+        test_report.get(1)
+    )["f1-score"]
+
+
+    # =====================================================
+    # COMPARISON TABLE
+    # =====================================================
+
+    comparison_df = pd.DataFrame({
+
+        "Metric": [
+            "Accuracy",
+            "Precision",
+            "Recall",
+            "F1 Score"
+        ],
+
+        "Test Data": [
+            test_accuracy * 100,
+            test_precision * 100,
+            test_recall * 100,
+            test_f1 * 100
+        ],
+
+        "Live Data": [
+            live_accuracy * 100,
+            live_precision * 100,
+            live_recall * 100,
+            live_f1 * 100
+        ]
+    })
+
+
+    comparison_df["Test Data"] = (
+        comparison_df["Test Data"]
+        .round(2)
+    )
+
+    comparison_df["Live Data"] = (
+        comparison_df["Live Data"]
+        .round(2)
+    )
+
+
+    st.dataframe(
+        comparison_df,
+        use_container_width=True
+    )
+
+else:
+
+    st.info(
+        "Record actual outcomes to compare "
+        "test and live performance."
+    )
+
+
+# =========================================================
+# 18. PREDICTION CONFIDENCE DISTRIBUTION
+# =========================================================
+
+st.header("📊 Prediction Confidence Distribution")
+
+if len(st.session_state.live_records) > 0:
+
+    confidence_df = pd.DataFrame(
+        st.session_state.live_records
+    ).copy()
+
+
+    if "Confidence" in confidence_df.columns:
+
+        confidence_df["Confidence"] = (
+            pd.to_numeric(
+                confidence_df["Confidence"],
+                errors="coerce"
+            )
+        )
+
+        confidence_df = (
+            confidence_df
+            .dropna(
+                subset=["Confidence"]
+            )
+        )
+
+
+        # =================================================
+        # CONFIDENCE CATEGORIES
+        # =================================================
+
+        high = (
+            confidence_df["Confidence"] >= 80
+        ).sum()
+
+        medium = (
+            (
+                confidence_df["Confidence"] >= 60
+            )
+            &
+            (
+                confidence_df["Confidence"] < 80
+            )
+        ).sum()
+
+        low = (
+            confidence_df["Confidence"] < 60
+        ).sum()
+
+
+        confidence_summary = pd.DataFrame({
+
+            "Confidence Level": [
+                "High (80%+)",
+                "Medium (60-79%)",
+                "Low (<60%)"
+            ],
+
+            "Number of Predictions": [
+                high,
+                medium,
+                low
+            ]
+        })
+
+
+        st.bar_chart(
+            confidence_summary.set_index(
+                "Confidence Level"
+            )
+        )
+
+
+        # =================================================
+        # AVERAGE CONFIDENCE
+        # =================================================
+
+        average_confidence = (
+            confidence_df["Confidence"].mean()
+        )
+
+
+        st.metric(
+            "Average Prediction Confidence",
+            f"{average_confidence:.2f}%"
+        )
+
+
+        # =================================================
+        # CONFIDENCE STATISTICS
+        # =================================================
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+
+            st.metric(
+                "High Confidence",
+                high
+            )
+
+        with col2:
+
+            st.metric(
+                "Medium Confidence",
+                medium
+            )
+
+        with col3:
+
+            st.metric(
+                "Low Confidence",
+                low
+            )
+
+    else:
+
+        st.info(
+            "Confidence data is not available "
+            "in live records."
+        )
+
+else:
+
+    st.info(
+        "Make live predictions and record actual "
+        "outcomes to see the confidence distribution."
+    )
+
+
+# =========================================================
+# 19. PREDICTION ANALYTICS DASHBOARD
+# =========================================================
+
+st.header("📊 Prediction Analytics Dashboard")
+
+if len(st.session_state.live_records) > 0:
+
+    analytics_df = pd.DataFrame(
+        st.session_state.live_records
+    )
+
+
+    # =====================================================
+    # BASIC STATISTICS
+    # =====================================================
+
+    total_predictions = len(
+        analytics_df
+    )
+
+    correct_predictions = (
+        analytics_df["Prediction"]
+        ==
+        analytics_df["Actual"]
+    ).sum()
+
+    incorrect_predictions = (
+        analytics_df["Prediction"]
+        !=
+        analytics_df["Actual"]
+    ).sum()
+
+    survival_predictions = (
+        analytics_df["Prediction"] == 1
+    ).sum()
+
+    death_predictions = (
+        analytics_df["Prediction"] == 0
+    ).sum()
+
+    average_confidence = (
+        analytics_df["Confidence"].mean()
+    )
+
+
+    # =====================================================
+    # DASHBOARD METRICS
+    # =====================================================
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+
+        st.metric(
+            "Total Predictions",
+            total_predictions
+        )
+
+    with col2:
+
+        st.metric(
+            "Correct Predictions",
+            correct_predictions
+        )
+
+    with col3:
+
+        st.metric(
+            "Incorrect Predictions",
+            incorrect_predictions
+        )
+
+    with col4:
+
+        st.metric(
+            "Average Confidence",
+            f"{average_confidence:.2f}%"
+        )
+
+
+    # =====================================================
+    # PREDICTION DISTRIBUTION
+    # =====================================================
+
+    st.subheader("🚢 Prediction Distribution")
+
+    prediction_distribution = pd.DataFrame({
+
+        "Outcome": [
+            "Predicted Survived",
+            "Predicted Did Not Survive"
+        ],
+
+        "Count": [
+            survival_predictions,
+            death_predictions
+        ]
+    })
+
+
+    st.bar_chart(
+        prediction_distribution.set_index(
+            "Outcome"
+        )
+    )
+
+
+    # =====================================================
+    # CORRECT VS INCORRECT
+    # =====================================================
+
+    st.subheader(
+        "🎯 Prediction Accuracy Distribution"
+    )
+
+    accuracy_distribution = pd.DataFrame({
+
+        "Result": [
+            "Correct",
+            "Incorrect"
+        ],
+
+        "Count": [
+            correct_predictions,
+            incorrect_predictions
+        ]
+    })
+
+
+    st.bar_chart(
+        accuracy_distribution.set_index(
+            "Result"
+        )
+    )
+
+else:
+
+    st.info(
+        "Record actual outcomes to generate "
+        "the Prediction Analytics Dashboard."
+    )
+
+
+# =========================================================
+# 20. FEATURE IMPORTANCE
+# =========================================================
+
+st.header("📊 Feature Importance")
+
+feature_importance_df = pd.DataFrame({
+
+    "Feature": feature_names,
+
+    "Importance": model.feature_importances_
+})
+
+
+feature_importance_df = (
+    feature_importance_df
+    .sort_values(
+        by="Importance",
+        ascending=False
+    )
+)
+
+
+feature_importance_df["Importance (%)"] = (
+    feature_importance_df["Importance"] * 100
+).round(2)
+
+
+# =========================================================
+# FEATURE IMPORTANCE CHART
+# =========================================================
+
+st.subheader("🔍 Most Important Features")
+
+st.bar_chart(
+    feature_importance_df.set_index(
+        "Feature"
+    )["Importance (%)"]
+)
+
+
+# =========================================================
+# FEATURE IMPORTANCE TABLE
+# =========================================================
+
+st.subheader("📋 Feature Importance Details")
+
+st.dataframe(
+    feature_importance_df[
+        [
+            "Feature",
+            "Importance (%)"
+        ]
+    ],
+    use_container_width=True
+)
+
+
+# =========================================================
+# MOST IMPORTANT FEATURE
+# =========================================================
+
+top_feature = feature_importance_df.iloc[0]
+
+st.success(
+    f"⭐ Most Important Feature: "
+    f"**{top_feature['Feature']}** "
+    f"({top_feature['Importance (%)']:.2f}%)"
+)
