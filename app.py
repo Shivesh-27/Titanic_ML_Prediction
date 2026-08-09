@@ -1253,3 +1253,121 @@ st.success(
     f"**{top_feature['Feature']}** "
     f"({top_feature['Importance (%)']:.2f}%)"
 )
+
+
+# =========================================================
+# 19. README / ABOUT PROJECT
+# =========================================================
+
+st.header("📖 README / About Project")
+
+with st.expander("🚢 About This Project", expanded=False):
+
+    st.markdown("""
+    ## 🚢 Titanic Survival Prediction
+
+    This project uses **Machine Learning** to predict whether a
+    Titanic passenger is likely to survive based on passenger
+    information.
+
+    ### 🎯 Objective
+
+    The objective of this project is to build a machine learning
+    classification system that predicts passenger survival.
+
+    ### 🤖 Machine Learning Model
+
+    **Random Forest Classifier**
+
+    The trained model is stored as:
+
+    `titanic_model.pkl`
+
+    ### 📊 Input Features
+
+    The model uses the following features:
+
+    - **Pclass** – Passenger class
+    - **Sex** – Passenger gender
+    - **Age** – Passenger age
+    - **SibSp** – Number of siblings/spouses aboard
+    - **Parch** – Number of parents/children aboard
+    - **Fare** – Passenger ticket fare
+    - **Embarked_Q** – Passenger embarked from Queenstown
+    - **Embarked_S** – Passenger embarked from Southampton
+
+    ### 🔮 Prediction
+
+    The application provides:
+
+    - Survival prediction
+    - Survival probability
+    - Death probability
+    - Prediction confidence
+    - Prediction history
+
+    ### 📈 Model Performance
+
+    The application displays:
+
+    - Accuracy
+    - Confusion Matrix
+    - Precision
+    - Recall
+    - F1 Score
+    - Classification Report
+
+    ### 📊 Live Performance
+
+    Users can enter the actual outcome after making a prediction.
+
+    The application then calculates:
+
+    - Live Accuracy
+    - Live Precision
+    - Live Recall
+    - Live F1 Score
+    - Live Confusion Matrix
+    - Live Accuracy Trend
+
+    ### 📋 Prediction Analytics
+
+    The dashboard also provides:
+
+    - Prediction distribution
+    - Correct vs incorrect predictions
+    - Confidence distribution
+    - Average prediction confidence
+    - Feature importance
+    - Test vs Live performance
+
+    ### 💾 Data Export
+
+    Prediction records can be downloaded as CSV files.
+
+    ### 🛠️ Technologies Used
+
+    - Python
+    - Pandas
+    - Scikit-learn
+    - Joblib
+    - Streamlit
+    - Random Forest
+
+    ### 📁 Project Files
+
+    ```
+    app.py
+    titanic_model.pkl
+    model_performance.pkl
+    requirements.txt
+    README.md
+    ```
+
+    ### 👨‍💻 Developer
+
+    **Shivesh**
+
+    This project was developed as a Machine Learning / Data Science
+    portfolio project.
+    """)
